@@ -12,15 +12,12 @@ public:
 		p_th = 1;
 		rho  = 10;
 	}
-
 };
 
 std::ostream& operator<<(std::ostream& os, const primitive& pr){
     os << pr.p_th << ',' << pr.rho;
     return os;
 }
-
-
 
 class ndvector {
 public: 
@@ -48,10 +45,6 @@ public:
 
 int main(int argc, char const *argv[])
 {
-	//test prin : std::cout<<idim<<jdim<<"\n"<<std::endl;
-    //print(idim,jdim,"\n");
-	
-
 	//  (a) ? b : c if a -> b else -> c
 	ndvector main_grid(idim, (ndim>1) ? jdim : 1, (ndim>2) ? kdim : 1);
 
