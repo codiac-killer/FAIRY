@@ -1,0 +1,14 @@
+
+INPUT:  Point Values
+X: 		Point to Distance
+case(d=1):
+	A = 2Darray(N+1)
+	for i in range(N):
+		for j in range(len(INPUT[i])):
+			Dp = INPUT[i+1][j]+1
+			Dm =-INPUT[i-1][j]+1
+			ujd= minmod[Dm,Dp]
+			A[i][j][1] = INPUT[i][j]+ujd*(X[i-1/2]-X[i])/dX
+			A[i][j][2] = INPUT[i][j]+ujd*(X[i+1/2]-X[i])/dX
+
+
