@@ -16,7 +16,6 @@ int main(int argc, char const *argv[])
 {
 
 
-
 double x[2*idim+1+dim_b]; // +2 due to ghost zones , +1 due to i/2
 double z[0]; 
 double y[0];

@@ -65,5 +65,4 @@ public:
 
 
 
-
 ndvector main_grid(idim, (ndim>1) ? jdim : 1, (ndim>2) ? kdim : 1);
