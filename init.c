@@ -46,15 +46,15 @@ for (int i = 2; i < main_grid.i; ++i)
 	{
 		for (int k = 0; k < main_grid.k; ++k)
 		{
-			//p = i*main_grid.j*main_grid.k+j*main_grid.k+k; // fix the pointer to the "array"
+			// p = i*main_grid.j*main_grid.k+j*main_grid.k+k; // fix the pointer to the "array"
 
 			// x,y,z from grid.h used as reference to the real numerical distance rather than cell ID
-			//main_grid.array[p].p_th = x[i]; 
-			//main_grid.array[p].rho  = y[j];
+			// main_grid.array[p].p_th = x[i]; 
+			// main_grid.array[p].rho  = y[j];
 
 			for (int ii = 0; ii < ndim; ++ii)
 			{
-				//main_grid.array[p].u[ii]  = x[i]/(x[i]+z[k]);
+				// main_grid.array[p].u[ii]  = x[i]/(x[i]+z[k]);
 			}
 		}
 	}

@@ -16,11 +16,16 @@ t minmod(t a, t b){
 
 }
 
-// Iterate over three elements of primatives
-// v_left[0] = tvd_reconstruction(v[i].p_th, minmod(-v[i-1].p_th - 1, v[i+1].p_th + 1), x, x[i], delta_x);
-// v_right[0] = tvd_reconstruction(v[i].p_th, minmod(-v[i-1].p_th - 1, v[i+1].p_th + 1), x, x[i], delta_x);
-// v_left[1] = tvd_reconstruction(v[i].rho, minmod(-v[i-1].rho - 1, v[i+1].rho + 1), x, x[i], delta_x);
-// v_right[1] = tvd_reconstruction(v[i].rho, minmod(-v[i-1].rho - 1, v[i+1].rho + 1), x, x[i], delta_x);
-// v_left[2] = tvd_reconstruction(v[i].u, minmod(-v[i-1].u - 1, v[i+1].u + 1), x, x[i], delta_x);
-// v_right[2] = tvd_reconstruction(v[i].u, minmod(-v[i-1].u - 1, v[i+1].u + 1), x, x[i], delta_x);
+// Iterate over five elements of primitives (Pressure, Density, Velocities)
+// Pressure
+// v_left[0] = tvd_reconstruction(v[i].p_th, minmod(-v[i-1].p_th - 1, v[i+1].p_th + 1), x+1/2, x[i], delta_x);
+// v_right[0] = tvd_reconstruction(v[i].p_th, minmod(-v[i-1].p_th - 1, v[i+1].p_th + 1), x-1/2, x[i], delta_x);
+// Density
+// v_left[1] = tvd_reconstruction(v[i].rho, minmod(-v[i-1].rho - 1, v[i+1].rho + 1), x+1/2, x[i], delta_x);
+// v_right[1] = tvd_reconstruction(v[i].rho, minmod(-v[i-1].rho - 1, v[i+1].rho + 1), x-1/2, x[i], delta_x);
+// Velocity
+// for (int j = 0; j < n_comp; ++j){
+// v_left[2+j] = tvd_reconstruction(v[i].u, minmod(-v[i-1].u[j] - 1, v[i+1].u + 1), x+1/2, x[i], delta_x);
+// v_right[2+j] = tvd_reconstruction(v[i].u, minmod(-v[i-1].u[j] - 1, v[i+1].u + 1), x-1/2, x[i], delta_x);
+// }
 
