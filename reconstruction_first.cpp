@@ -17,15 +17,20 @@ t minmod(t a, t b){
 }
 
 // Iterate over five elements of primitives (Pressure, Density, Velocities)
-// Pressure
-// v_left[0] = tvd_reconstruction(v[i].p_th, minmod(-v[i-1].p_th - 1, v[i+1].p_th + 1), x+1/2, x[i], delta_x);
-// v_right[0] = tvd_reconstruction(v[i].p_th, minmod(-v[i-1].p_th - 1, v[i+1].p_th + 1), x-1/2, x[i], delta_x);
-// Density
-// v_left[1] = tvd_reconstruction(v[i].rho, minmod(-v[i-1].rho - 1, v[i+1].rho + 1), x+1/2, x[i], delta_x);
-// v_right[1] = tvd_reconstruction(v[i].rho, minmod(-v[i-1].rho - 1, v[i+1].rho + 1), x-1/2, x[i], delta_x);
-// Velocity
-// for (int j = 0; j < n_comp; ++j){
-// v_left[2+j] = tvd_reconstruction(v[i].u, minmod(-v[i-1].u[j] - 1, v[i+1].u + 1), x+1/2, x[i], delta_x);
-// v_right[2+j] = tvd_reconstruction(v[i].u, minmod(-v[i-1].u[j] - 1, v[i+1].u + 1), x-1/2, x[i], delta_x);
-// }
-
+// Explain indexes:
+// We stride i by three to iterate over the cell centers
+// then we access the interface primitives as i-1 for the upper limit of the left interface (v^R_{i-1/2})
+// and i+2 for the lower limit of the right interface (v^L_{i+1/2})
+for(int i=2*dim_b+1; i<main_grid.i/3.; i+=3){ 
+  // Pressure
+  main_grid[i-1].p_th = tvd_reconstruction(v[i].p_th, minmod(-v[i-1].p_th - 1, v[i+1].p_th + 1), x[i-1], x[i], delta_x);
+  main_grid[i+1].p_th = tvd_reconstruction(v[i].p_th, minmod(-v[i-1].p_th - 1, v[i+1].p_th + 1), x[i+1], x[i], delta_x);
+  // Density
+  main_grid[i-1].rho = tvd_reconstruction(v[i].rho, minmod(-v[i-1].rho - 1, v[i+1].rho + 1), x[i-1], x[i], delta_x);
+  main_grid[i+1].rho = tvd_reconstruction(v[i].rho, minmod(-v[i-1].rho - 1, v[i+1].rho + 1), x[i+1], x[i], delta_x);
+  // Velocity (all of its components)
+  for (int j = 0; j < n_comp; ++j){
+  main_grid[i-1].u[j]  = tvd_reconstruction(v[i].u[j], minmod(-v[i-1].u[j] - 1, v[i+1].u + 1), x[i-1], x[i], delta_x);
+  main_grid[i+1].u[j]  = tvd_reconstruction(v[i].u[j], minmod(-v[i-1].u[j] - 1, v[i+1].u + 1), x[i+1], x[i], delta_x);
+  }
+}

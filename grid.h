@@ -7,10 +7,6 @@
 #include <functional>
 
 
-
-
-
-
 class primitive {
 public:
 // orizoume to u pinaka me ta primitves 
@@ -31,7 +27,6 @@ std::ostream& operator<<(std::ostream& os, const primitive& pr){
     os << pr.p_th << ',' << pr.rho;
     return os;
 }
-
 
 
 // kanoume klassi gia to grid
@@ -62,7 +57,4 @@ public:
 };
 
 
-
-
-
-ndvector main_grid(idim, (ndim>1) ? jdim : 1, (ndim>2) ? kdim : 1);
+ndvector main_grid(2*idim+1+2*dim_b);
