@@ -85,7 +85,8 @@ class ndvector {
 public: 
 	// ta int einai oi diastasis
 	int i,j,k;
-	std::vector<primitive> array;
+	std::vector<primitive> array; // TODO : array se center
+	std::vector<primitive> interfaces;
 	std::vector<conservable> conservables_;
 	// apaititai mono i 1i diastasi, ta alla mpainoun 1
 	ndvector(int ii, int jj=1, int kk=1){
@@ -93,6 +94,7 @@ public:
 		j = jj;
 		k = kk;
 		array.resize(i*j*k);
+		interfaces.resize(2*i*j*k)
 		conservables_.resize(i*j*k);
 	}
 	// me tin print tiponoume ta incules tou primitive
