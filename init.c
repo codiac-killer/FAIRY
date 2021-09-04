@@ -12,21 +12,24 @@ static const int        k_min = 1, k_max = 2;
 static const char*		space = "linear";
 
 
-int main(int argc, char const *argv[])
+int startup()
 {
 
 
 double x[2*idim+1+2*dim_b]; // +2 due to ghost zones , +1 due to i/2
 double z[0]; 
 double y[0];
+
 if (space == "linear"){
 		if (ndim == 1){
 
 
-			double d_i = (i_max - i_min)/idim ;//  dX of numerical grid
+			double d_i = ((float)i_max - (float)i_min)/(float)idim ;//  dX of numerical grid
 			for (int i = 0; i < 2*idim+dim_b+1; ++i) // + 2 cells to check from ghost zones
-			{
+			{	
+
 				x[i] = (i_min - d_i/2)+i*d_i/2;
+				
 			}
 			y[0] = j_min;
 			z[0] = k_min;
@@ -46,18 +49,21 @@ for (int i = 2; i < main_grid.i; ++i)
 	{
 		for (int k = 0; k < main_grid.k; ++k)
 		{
-			// p = i*main_grid.j*main_grid.k+j*main_grid.k+k; // fix the pointer to the "array"
+			p = i*main_grid.j*main_grid.k+j*main_grid.k+k; // fix the pointer to the "array"
 
 			// x,y,z from grid.h used as reference to the real numerical distance rather than cell ID
-			// main_grid.array[p].p_th = x[i]; 
-			// main_grid.array[p].rho  = y[j];
+			main_grid.array[p].p_th = 1; 
+			main_grid.array[p].rho  = 1;
 
-			for (int ii = 0; ii < ndim; ++ii)
+			for (int ii = 0; ii < n_comp; ++ii)
 			{
-				// main_grid.array[p].u[ii]  = x[i]/(x[i]+z[k]);
+				main_grid.array[p].u[ii]  = 0.5;
 			}
+			// builed conservables
+			main_grid.conservables_[p].build(main_grid.array[p]);
 		}
 	}
 }
+
 	return 0;
 }
