@@ -3,19 +3,13 @@
 #include <vector>
 #include <stdio.h>
 #include "init_params.h"
-#include "basic_io.h"
 #include <functional>
-
-
-
-
-
 
 class primitive {
 public:
 // orizoume to u pinaka me ta primitves 
-	float p_th, rho;
-	float u[n_comp];
+	double p_th, rho;
+	double u[n_comp];
 	primitive(){
 		// default times se periptosi pou dn dosei o user 
 		p_th = 1;
@@ -27,12 +21,12 @@ public:
 	}
 };
 
+
 class conservable {
 public:
 // orizoume to u pinaka me ta primitves 
 	float rho_, e_;
 	float p_[n_comp];
-	
 	
 	conservable(){
 		// default times se periptosi pou dn dosei o user 
@@ -79,7 +73,6 @@ std::ostream& operator<<(std::ostream& os, const primitive& pr){
 }
 
 
-
 // kanoume klassi gia to grid
 class ndvector {
 public: 
@@ -93,12 +86,12 @@ public:
 		i = ii;
 		j = jj;
 		k = kk;
-		array.resize(i*j*k);
-		interfaces.resize(2*i*j*k)
+		array.resize((i+(i<1)*2*dim_b)*(j+(j<1)*2*dim_b)*(k+(k<1)*2*dim_b));
+		interfaces.resize(2*i*j*k);
 		conservables_.resize(i*j*k);
 	}
 	// me tin print tiponoume ta incules tou primitive
-	void print(){
+	void print_cells(){
 		for (int Di=0; Di<i; Di++){
 			for (int Dj=0; Dj<j; Dj++){
 				for (int Dk=0; Dk<k; Dk++){
@@ -109,9 +102,14 @@ public:
 			std::cout<<"\n";
 		}
 	}
+	void print_interfaces(){
+    printf("|");
+		for (int Di=0; Di<i; Di++){
+      printf("%f %f|", interfaces[2*Di], interfaces[2*Di+1]);
+    }
+    printf("\n");
+	}
 };
-
-
 
 
 // dim_b 
