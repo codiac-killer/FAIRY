@@ -24,15 +24,15 @@ bool reconstruction_first_order(){
   // contain ghost cells (-dim_b) and has 2 elements per cell (2*)
   for(int i=0; i<main_grid.i; i++){ 
     // Pressure
-    main_grid.interfaces[2*i].p_th = tvd_reconstruction(main_grid.array[i].p_th, minmod(-main_grid.array[i-1].p_th - 1, main_grid.array[i+1].p_th + 1), x[i-1], x[i], d_i);
-    main_grid.interfaces[2*i+1].p_th = tvd_reconstruction(main_grid.array[i].p_th, minmod(-main_grid.array[i-1].p_th - 1, main_grid.array[i+1].p_th + 1), x[i+1], x[i], d_i);
+    main_grid.interfaces[2*i].p_th = tvd_reconstruction(main_grid.array[i].p_th, minmod(-main_grid.array[i-1].p_th - 1, main_grid.array[i+1].p_th + 1), x[2*i], x[2*i+1], d_i);
+    main_grid.interfaces[2*i+1].p_th = tvd_reconstruction(main_grid.array[i].p_th, minmod(-main_grid.array[i-1].p_th - 1, main_grid.array[i+1].p_th + 1), x[2*(i+1)], x[i], d_i);
     // Density
-    main_grid.interfaces[2*i].rho = tvd_reconstruction(main_grid.array[i].rho, minmod(-main_grid.array[i-1].rho - 1, main_grid.array[i+1].rho + 1), x[i-1], x[i], d_i);
-    main_grid.interfaces[2*i+1].rho = tvd_reconstruction(main_grid.array[i].rho, minmod(-main_grid.array[i-1].rho - 1, main_grid.array[i+1].rho + 1), x[i+1], x[i], d_i);
+    main_grid.interfaces[2*i].rho = tvd_reconstruction(main_grid.array[i].rho, minmod(-main_grid.array[i-1].rho - 1, main_grid.array[i+1].rho + 1), x[2*i], x[2*i+1], d_i);
+    main_grid.interfaces[2*i+1].rho = tvd_reconstruction(main_grid.array[i].rho, minmod(-main_grid.array[i-1].rho - 1, main_grid.array[i+1].rho + 1), x[2*(i+1)], x[i], d_i);
     // Velocity (all of its components)
     for (int j = 0; j < n_comp; ++j){
-      main_grid.interfaces[2*i].u[j]  = tvd_reconstruction(main_grid.array[i].u[j], minmod(-main_grid.array[i-1].u[j] - 1, main_grid.array[i+1].u[j] + 1), x[i-1], x[i], d_i);
-      main_grid.interfaces[2*i+1].u[j]  = tvd_reconstruction(main_grid.array[i].u[j], minmod(-main_grid.array[i-1].u[j] - 1, main_grid.array[i+1].u[j] + 1), x[i+1], x[i], d_i);
+      main_grid.interfaces[2*i].u[j]  = tvd_reconstruction(main_grid.array[i].u[j], minmod(-main_grid.array[i-1].u[j] - 1, main_grid.array[i+1].u[j] + 1), x[2*i], x[2*i+1], d_i);
+      main_grid.interfaces[2*i+1].u[j]  = tvd_reconstruction(main_grid.array[i].u[j], minmod(-main_grid.array[i-1].u[j] - 1, main_grid.array[i+1].u[j] + 1),x[2*(i+1)], x[i], d_i);
     }
   }
 

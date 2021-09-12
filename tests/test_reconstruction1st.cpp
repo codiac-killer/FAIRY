@@ -4,6 +4,7 @@
 
 int main(){
   startup();
+  //conv_to_prims(main_grid);
 
   if(reconstruction_first_order()) printf("success\n");
 

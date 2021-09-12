@@ -86,7 +86,8 @@ public:
 		i = ii;
 		j = jj;
 		k = kk;
-		array.resize((i+(i<1)*2*dim_b)*(j+(j<1)*2*dim_b)*(k+(k<1)*2*dim_b));
+		//array.resize((i+(i>1)*2*dim_b)*(j+(j<1)*2*dim_b)*(k+(k<1)*2*dim_b));
+		array.resize(i*i*j*k);
 		interfaces.resize(2*i*j*k);
 		conservables_.resize(i*j*k);
 	}
@@ -104,8 +105,8 @@ public:
 	}
 	void print_interfaces(){
     printf("|");
-		for (int Di=0; Di<i; Di++){
-      printf("%f %f|", interfaces[2*Di], interfaces[2*Di+1]);
+		for (int Di=0; Di<i-1; Di++){
+      printf("%f %f|", interfaces[2*Di].p_th, interfaces[2*Di+1].p_th);
     }
     printf("\n");
 	}
