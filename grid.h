@@ -80,16 +80,18 @@ public:
 	int i,j,k;
 	std::vector<primitive> array; // TODO : array se center
 	std::vector<primitive> interfaces;
+	std::vector<conservable> intf_cons;
 	std::vector<conservable> conservables_;
 	// apaititai mono i 1i diastasi, ta alla mpainoun 1
 	ndvector(int ii, int jj=1, int kk=1){
 		i = ii;
 		j = jj;
 		k = kk;
-		//array.resize((i+(i>1)*2*dim_b)*(j+(j<1)*2*dim_b)*(k+(k<1)*2*dim_b));
-		array.resize(i*i*j*k);
-		interfaces.resize(2*i*j*k);
-		conservables_.resize(i*j*k);
+		array.resize(2*(i+(i>1)*2*dim_b)*(j+(j>1)*2*dim_b)*(k+(k>1)*2*dim_b)); //2 for each  i and each side of dim_b cell (basically 2*(i+boundary cells))
+		//array.resize(i*i*j*k);
+		interfaces.resize(2*(i+(i>1)*2*dim_b)*j*k);
+		intf_cons.resize(2*(i+(i>1)*2*dim_b)*j*k);
+		conservables_.resize(2*(i+(i>1)*2*dim_b)*j*k);
 	}
 	// me tin print tiponoume ta incules tou primitive
 	void print_cells(){
@@ -105,8 +107,8 @@ public:
 	}
 	void print_interfaces(){
     printf("|");
-		for (int Di=0; Di<i-1; Di++){
-      printf("%f %f|", interfaces[2*Di].p_th, interfaces[2*Di+1].p_th);
+		for (int Di=0; Di<i+2*dim_b; Di++){
+      printf("%f %f \n", interfaces[2*Di].p_th, interfaces[2*Di+1].p_th);
     }
     printf("\n");
 	}
@@ -114,4 +116,4 @@ public:
 
 
 // dim_b 
-ndvector main_grid(idim+2*dim_b, (ndim>1) ? jdim : 1, (ndim>2) ? kdim : 1);
+ndvector main_grid(idim, (ndim>1) ? jdim : 1, (ndim>2) ? kdim : 1);
