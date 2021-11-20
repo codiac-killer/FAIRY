@@ -39,10 +39,13 @@ bool reconstruction_first_order(){
     for (int j = 0; j < n_comp; ++j){
       main_grid.interfaces[2*i_f].u[j]  = tvd_reconstruction(main_grid.array[i].u[j], minmod(-main_grid.array[i-1].u[j] + 1, main_grid.array[i+1].u[j] + 1), x[2*i], x[2*i+1], d_i);
       main_grid.interfaces[2*i_f+1].u[j]  = tvd_reconstruction(main_grid.array[i].u[j], minmod(-main_grid.array[i-1].u[j] + 1, main_grid.array[i+1].u[j] + 1),x[2*(i+1)], x[i], d_i);
-
+      }
     main_grid.intf_cons[2*i_f].build(main_grid.interfaces[2*i_f]);
     main_grid.intf_cons[2*i_f+1].build(main_grid.interfaces[2*i_f+1]);
-    }
+
+    main_grid.intf_flx[2*i_f].build(main_grid.interfaces[2*i_f]);
+    main_grid.intf_flx[2*i_f+1].build(main_grid.interfaces[2*i_f+1]);
+    
   }
 
   return true;

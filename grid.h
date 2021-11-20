@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <math.h>  
 #include <vector>
 #include <stdio.h>
 #include "init_params.h"
@@ -67,6 +68,63 @@ public:
 	}
 };
 
+
+
+class flux {
+public:
+// orizoume to u pinaka me ta primitves 
+	float rhof_[n_comp], ef_[n_comp];
+	float pf_[n_comp][n_comp];
+	
+	flux(){
+		// default times se periptosi pou dn dosei o user 
+
+		for (int i = 0; i < n_comp; ++i)
+		{
+			rhof_[i] = 1;
+			ef_[i]  = 1;		
+			pf_[i][i]=1;
+		}
+	}
+	int build(primitive input_){
+		double w_;
+		double lor =0;
+		//First add the u**2 part of the lorentz factor.
+		for (int i = 0; i < n_comp; ++i)
+		{
+			lor = lor + input_.u[i]*input_.u[i];
+		}
+		//now we make the correct lorentz factor
+		lor = pow(1/(1-lor),0.5);
+		
+		//definition of w
+		w_= input_.rho+gamma_par*input_.p_th;
+
+
+
+
+
+		for (int i = 0; i < n_comp; ++i)
+			{
+			// Now values of fluxes ( eq. (6) of delzana_HD )
+			rhof_[i] = input_.rho*lor*input_.u[i];
+			ef_[i]	 = w_*lor*lor*input_.u[i];
+
+			for (int j = 0; j < n_comp; ++j)
+			
+			
+				{
+
+					pf_[i][j]= w_*lor*lor*input_.u[i]*input_.u[j]+input_.p_th*(i==j);
+				}
+			}
+
+		return 0;
+	}
+};
+
+
+
 std::ostream& operator<<(std::ostream& os, const primitive& pr){
     os << pr.p_th << ',' << pr.rho << ',' << pr.u[0] << ',' << pr.u[1] << ',' << pr.u[2] << ','<< (1/(1-pow(pr.u[0],2)-pow(pr.u[1],2)-pow(pr.u[2],2)));
     return os;
@@ -82,6 +140,10 @@ public:
 	std::vector<primitive> interfaces;
 	std::vector<conservable> intf_cons;
 	std::vector<conservable> conservables_;
+	std::vector<flux> fluxes_;
+	std::vector<flux> intf_flx;
+	std::vector<flux> solv_flx;
+	std::vector<double> eigens;
 	// apaititai mono i 1i diastasi, ta alla mpainoun 1
 	ndvector(int ii, int jj=1, int kk=1){
 		i = ii;
@@ -91,7 +153,11 @@ public:
 		//array.resize(i*i*j*k);
 		interfaces.resize(2*(i+(i>1)*2*dim_b)*j*k);
 		intf_cons.resize(2*(i+(i>1)*2*dim_b)*j*k);
+		intf_flx.resize(2*(i+(i>1)*2*dim_b)*j*k);
+		solv_flx.resize((i+(i>1)*2*dim_b)*j*k);
 		conservables_.resize(2*(i+(i>1)*2*dim_b)*j*k);
+		fluxes_.resize(2*(i+(i>1)*2*dim_b)*j*k);
+		eigens.resize(2*(i+(i>1)*2*dim_b)*j*k);
 	}
 	// me tin print tiponoume ta incules tou primitive
 	void print_cells(){
@@ -108,7 +174,8 @@ public:
 	void print_interfaces(){
     printf("|");
 		for (int Di=0; Di<i+2*dim_b; Di++){
-      printf("%f %f \n", interfaces[2*Di].p_th, interfaces[2*Di+1].p_th);
+      	    printf("%f %f \n", interfaces[2*Di].p_th, interfaces[2*Di+1].p_th);
+			//printf("%f %f \n", intf_flx[2*Di].rhof_[1], intf_flx[2*Di+1].rhof_[1]);
     }
     printf("\n");
 	}

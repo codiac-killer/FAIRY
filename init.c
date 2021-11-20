@@ -49,10 +49,11 @@ int startup() {
         //printf("%d %f \n", p,main_grid.array[p].p_th);
 
         for (int ii = 0; ii < n_comp; ++ii) {
-          main_grid.array[p].u[ii]  = 0.5; 
+          main_grid.array[p].u[ii]  = 0.1*ii; 
         }
         // builed conservables
         main_grid.conservables_[p].build(main_grid.array[p]);
+        main_grid.fluxes_[p].build(main_grid.array[p]);
       }
     }
   }
@@ -106,6 +107,7 @@ int p,p1;
         }
         // builed conservables
         main_grid.conservables_[p].build(main_grid.array[p]);
+        main_grid.fluxes_[p].build(main_grid.array[p]);
       }
     }
   }
