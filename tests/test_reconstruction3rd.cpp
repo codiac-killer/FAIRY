@@ -9,12 +9,8 @@ int main(){
 
   //if(reconstruction_first_order()) printf("success\n");
   reconstruction_third_order();
-  main_grid.print_interfaces();
-  /*for (int i = 0; i <  main_grid.array.size(); ++i)
-  {
-  	std::cout<<main_grid.array[i].p_th;
-  }*/
- 
+  main_grid.test_interfaces(0.1);
+	main_grid.print_grid();
 
   return 0;
 }
