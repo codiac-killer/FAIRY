@@ -13,10 +13,10 @@ minmod(t a, t b)
 }
 
 double static
-tvd_limit_rec(double v, double der_v, double x, double x_i, double delta_x)
+tvd_limit_rec(double v, double der_v, double x_if, double x_center, double delta_x)
 {
-	printf("\nL = %lf\n", v + der_v*(x - x_i)/delta_x);
-  return v + der_v*(x - x_i)/delta_x;
+	printf("\nL = %lf\n", v + der_v*(x_if - x_center)/delta_x);
+  return v + der_v*(x_if - x_center)/delta_x;
 }
 
 double static
@@ -58,8 +58,173 @@ select_k(double d_minus, double d_zero, double d_plus)
 	}
 }
 
+static int
+reconstruct_pressure(const int i)
+{
+	int j,k;
+	double l, d_minus, d_zero, d_plus;
+
+	l = tvd_limit_rec(main_grid.array[2*(i)+1].p_th, minmod(-main_grid.array[2*(i-1)+1].p_th + 1, main_grid.array[2*(i+1)+1].p_th + 1), x[2*i], x[2*i+1], d_i);
+
+	j = i - 1;
+	d_minus = weighted_diff(1, main_grid.array[2*(j)+1].p_th, main_grid.array[2*(j+1)+1].p_th, main_grid.array[2*(j-1)+1].p_th, x[2*j], x[2*j+1], d_i, l);
+	j = i;
+	d_zero = weighted_diff(0.7, main_grid.array[2*(j)+1].p_th, main_grid.array[2*(j+1)+1].p_th, main_grid.array[2*(j-1)+1].p_th, x[2*j], x[2*j+1], d_i, l);
+	j = i + 1;
+	d_plus = weighted_diff(1, main_grid.array[2*(j)+1].p_th, main_grid.array[2*(j+1)+1].p_th, main_grid.array[2*(j-1)+1].p_th, x[2*j], x[2*j+1], d_i, l);
+
+	k = select_k(d_minus, d_zero, d_plus);
+	printf("k = %d, i = %d\n", k, i);
+
+	j = i + k;
+	if (k == -2) {
+		/* use limiter */
+		main_grid.interfaces[2*i].p_th = l;
+	} else if (k == 2) {
+		return -1;
+	} else {
+		/* Use quadratic */
+		main_grid.interfaces[2*i].p_th = quad_polyonimals(main_grid.array[2*(j)+1].p_th, main_grid.array[2*(j+1)+1].p_th, main_grid.array[2*(j-1)+1].p_th, x[2*j], x[2*j+1], d_i);
+	}
+
+	l = tvd_limit_rec(main_grid.array[2*(i)+1].p_th, minmod(-main_grid.array[2*(i-1)+1].p_th + 1, main_grid.array[2*(i+1)+1].p_th + 1), x[2*i+2], x[2*i+1], d_i);
+
+	j = i - 1;
+	d_minus = weighted_diff(1, main_grid.array[2*(j)+1].p_th, main_grid.array[2*(j+1)+1].p_th, main_grid.array[2*(j-1)+1].p_th, x[2*j+2], x[2*j+1], d_i, l);
+	j = i;
+	d_zero = weighted_diff(0.7, main_grid.array[2*(j)+1].p_th, main_grid.array[2*(j+1)+1].p_th, main_grid.array[2*(j-1)+1].p_th, x[2*j+2], x[2*j+1], d_i, l);
+	j = i + 1;
+	d_plus = weighted_diff(1, main_grid.array[2*(j)+1].p_th, main_grid.array[2*(j+1)+1].p_th, main_grid.array[2*(j-1)+1].p_th, x[2*j+2], x[2*j+1], d_i, l);
+
+	k = select_k(d_minus, d_zero, d_plus);
+	printf("k = %d, i = %d\n", k, i);
+	j = i + k;
+	if (k == -2) {
+		/* use limiter */
+		main_grid.interfaces[2*i+1].p_th = l;
+	} else if (k == 2) {
+		return -1;
+	} else {
+		/* Use quadratic */
+		main_grid.interfaces[2*i+1].p_th = quad_polyonimals(main_grid.array[2*(j)+1].p_th, main_grid.array[2*(j+1)+1].p_th, main_grid.array[2*(j-1)+1].p_th, x[2*j+2], x[2*j+1], d_i);
+	}
+
+	return 0;
+
+}
+
+static int
+reconstruct_density(int i)
+{
+	int j,k;
+	double l, d_minus, d_zero, d_plus;
+
+	l = tvd_limit_rec(main_grid.array[i].rho, minmod(-main_grid.array[i-1].rho + 1, main_grid.array[i+1].rho + 1), x[2*i], x[2*i+1], d_i);
+
+	j = i - 1;
+	d_minus = weighted_diff(1, main_grid.array[j].rho, main_grid.array[j+1].rho, main_grid.array[j-1].rho, x[2*j], x[2*j+1], d_i, l);
+	j = i;
+	d_zero = weighted_diff(0.7, main_grid.array[j].rho, main_grid.array[j+1].rho, main_grid.array[j-1].rho, x[2*j], x[2*j+1], d_i, l);
+	j = i + 1;
+	d_plus = weighted_diff(1, main_grid.array[j].rho, main_grid.array[j+1].rho, main_grid.array[j-1].rho, x[2*j], x[2*j+1], d_i, l);
+
+	k = select_k(d_minus, d_zero, d_plus);
+	printf("k = %d\n", k);
+
+	j = i + k;
+	if (k == -2) {
+		/* use limiter */
+		main_grid.interfaces[2*i].rho = l;
+	} else if (k == 2) {
+		return -1;
+	} else {
+		/* Use quadratic */
+		main_grid.interfaces[2*i].rho = quad_polyonimals(main_grid.array[j].rho, main_grid.array[j+1].rho, main_grid.array[j-1].rho, x[2*j], x[2*j+1], d_i);
+	}
+
+	l = tvd_limit_rec(main_grid.array[i].rho, minmod(-main_grid.array[i-1].rho + 1, main_grid.array[i+1].rho + 1), x[2*i+2], x[2*i+1], d_i);
+
+	j = i - 1;
+	d_minus = weighted_diff(1, main_grid.array[j].rho, main_grid.array[j+1].rho, main_grid.array[j-1].rho, x[2*j+2], x[2*j+1], d_i, l);
+	j = i;
+	d_zero = weighted_diff(0.7, main_grid.array[j].rho, main_grid.array[j+1].rho, main_grid.array[j-1].rho, x[2*j+2], x[2*j+1], d_i, l);
+	j = i + 1;
+	d_plus = weighted_diff(1, main_grid.array[j].rho, main_grid.array[j+1].rho, main_grid.array[j-1].rho, x[2*j+2], x[2*j+1], d_i, l);
+
+	k = select_k(d_minus, d_zero, d_plus);
+	printf("k = %d\n", k);
+	j = i + k;
+	if (k == -2) {
+		/* use limiter */
+		main_grid.interfaces[2*i+1].rho = l;
+	} else if (k == 2) {
+		return -1;
+	} else {
+		/* Use quadratic */
+		main_grid.interfaces[2*i+1].rho = quad_polyonimals(main_grid.array[j].rho, main_grid.array[j+1].rho, main_grid.array[j-1].rho, x[2*j+2], x[2*j+1], d_i);
+	}
+
+	return 0;
+
+}
+
+static int
+reconstruct_velocity(int i, int n)
+{
+	int j,k;
+	double l, d_minus, d_zero, d_plus;
+
+	l = tvd_limit_rec(main_grid.array[i].u[n], minmod(-main_grid.array[i-1].u[n] + 1, main_grid.array[i+1].u[n] + 1), x[2*i], x[2*i+1], d_i);
+
+	j = i - 1;
+	d_minus = weighted_diff(1, main_grid.array[j].u[n], main_grid.array[j+1].u[n], main_grid.array[j-1].u[n], x[2*j], x[2*j+1], d_i, l);
+	j = i;
+	d_zero = weighted_diff(0.7, main_grid.array[j].u[n], main_grid.array[j+1].u[n], main_grid.array[j-1].u[n], x[2*j], x[2*j+1], d_i, l);
+	j = i + 1;
+	d_plus = weighted_diff(1, main_grid.array[j].u[n], main_grid.array[j+1].u[n], main_grid.array[j-1].u[n], x[2*j], x[2*j+1], d_i, l);
+
+	k = select_k(d_minus, d_zero, d_plus);
+	printf("k = %d\n", k);
+
+	j = i + k;
+	if (k == -2) {
+		/* use limiter */
+		main_grid.interfaces[2*i].u[n] = l;
+	} else if (k == 2) {
+		return -1;
+	} else {
+		/* Use quadratic */
+		main_grid.interfaces[2*i].u[n] = quad_polyonimals(main_grid.array[j].u[n], main_grid.array[j+1].u[n], main_grid.array[j-1].u[n], x[2*j], x[2*j+1], d_i);
+	}
+
+	l = tvd_limit_rec(main_grid.array[i].u[n], minmod(-main_grid.array[i-1].u[n] + 1, main_grid.array[i+1].u[n] + 1), x[2*i+2], x[2*i+1], d_i);
+
+	j = i - 1;
+	d_minus = weighted_diff(1, main_grid.array[j].u[n], main_grid.array[j+1].u[n], main_grid.array[j-1].u[n], x[2*j+2], x[2*j+1], d_i, l);
+	j = i;
+	d_zero = weighted_diff(0.7, main_grid.array[j].u[n], main_grid.array[j+1].u[n], main_grid.array[j-1].u[n], x[2*j+2], x[2*j+1], d_i, l);
+	j = i + 1;
+	d_plus = weighted_diff(1, main_grid.array[j].u[n], main_grid.array[j+1].u[n], main_grid.array[j-1].u[n], x[2*j+2], x[2*j+1], d_i, l);
+
+	k = select_k(d_minus, d_zero, d_plus);
+	printf("k = %d\n", k);
+	j = i + k;
+	if (k == -2) {
+		/* use limiter */
+		main_grid.interfaces[2*i+1].u[n] = l;
+	} else if (k == 2) {
+		return -1;
+	} else {
+		/* Use quadratic */
+		main_grid.interfaces[2*i+1].u[n] = quad_polyonimals(main_grid.array[j].u[n], main_grid.array[j+1].u[n], main_grid.array[j-1].u[n], x[2*j+2], x[2*j+1], d_i);
+	}
+
+	return 0;
+
+}
+
 int
-reconstruction_third_order()
+reconstruction_third_order(void)
 {
   // Iterate over five elements of primitives (Pressure, Density, Velocities)
   // Explain indexes:
@@ -68,109 +233,26 @@ reconstruction_third_order()
   // and 2*(i-dim_b)+1 for the lower limit of the right interface (v^L_{i+1/2}) because the array of interfaces doesn't
   // contain ghost cells (-dim_b) and has 2 elements per cell (2*)
 
-	int i, j, k;
+	int i;
 	int n;
-	double d_minus, d_zero, d_plus;
-	double l;
-  double a;
-	double d;
 
   for (i=dim_b; i< idim+dim_b; i++) { // kanoume tin allagi opou to main grid exei pleon knai ta boundaries
 
     // Pressure
-		l = tvd_limit_rec(main_grid.array[i].p_th, minmod(-main_grid.array[i-1].p_th + 1, main_grid.array[i+1].p_th + 1), x[2*i], x[2*i+1], d_i);
-
-		j = i - 1;
-		d_minus = weighted_diff(1, main_grid.array[j].p_th, main_grid.array[j+1].p_th, main_grid.array[j-1].p_th, x[2*j], x[2*j+1], d_i, l);
-		j = i;
-		d_zero = weighted_diff(0.7, main_grid.array[j].p_th, main_grid.array[j+1].p_th, main_grid.array[j-1].p_th, x[2*j], x[2*j+1], d_i, l);
-		j = i + 1;
-		d_plus = weighted_diff(1, main_grid.array[j].p_th, main_grid.array[j+1].p_th, main_grid.array[j-1].p_th, x[2*j], x[2*j+1], d_i, l);
-
-		k = select_k(d_minus, d_zero, d_plus);
-		printf("k = %d\n", k);
-
-		j = i + k;
-		if (k == -2) {
-			/* use limiter */
-			main_grid.interfaces[2*i].p_th = l;
-		} else if (k == 2) {
+		if (reconstruct_pressure(i) < 0) 
 			return -1;
-		} else {
-			/* Use quadratic */
-			main_grid.interfaces[2*i].p_th = quad_polyonimals(main_grid.array[j].p_th, main_grid.array[j+1].p_th, main_grid.array[j-1].p_th, x[2*j], x[2*j+1], d_i);
-		}
-
-		l = tvd_limit_rec(main_grid.array[i].p_th, minmod(-main_grid.array[i-1].p_th + 1, main_grid.array[i+1].p_th + 1), x[2*(i+1)], x[i], d_i);
-
-		j = i - 1;
-		d_minus = weighted_diff(1, main_grid.array[j].p_th, main_grid.array[j+1].p_th, main_grid.array[j-1].p_th, x[2*(j+1)], x[j], d_i, l);
-		j = i;
-		d_zero = weighted_diff(0.7, main_grid.array[j].p_th, main_grid.array[j+1].p_th, main_grid.array[j-1].p_th, x[2*(j+1)], x[j], d_i, l);
-		j = i + 1;
-		d_plus = weighted_diff(1, main_grid.array[j].p_th, main_grid.array[j+1].p_th, main_grid.array[j-1].p_th, x[2*(j+1)], x[j], d_i, l);
-
-		k = select_k(d_minus, d_zero, d_plus);
-		printf("k = %d\n", k);
-		j = i + k;
-		if (k == -2) {
-			/* use limiter */
-			main_grid.interfaces[2*i+1].p_th = l;
-		} else if (k == 2) {
-			return -1;
-		} else {
-			/* Use quadratic */
-			main_grid.interfaces[2*i+1].p_th = quad_polyonimals(main_grid.array[j].p_th, main_grid.array[j+1].p_th, main_grid.array[j-1].p_th, x[2*(j+1)], x[j], d_i);
-		}
   
-//     // Density
-// 		j = i - 1;
-// 		d_minus = weighted_diff(1, main_grid.array[i].rho, main_grid.array[i+1].rho, main_grid.array[i-1].rho, minmod(-main_grid.array[i-1].rho + 1, main_grid.array[i+1].rho + 1), x[2*i], x[2*i+1], x[2*j+1], d_i);
-// 		j = i;
-// 		d_zero = weighted_diff(0.7, main_grid.array[i].rho, main_grid.array[i+1].rho, main_grid.array[i-1].rho, minmod(-main_grid.array[i-1].rho + 1, main_grid.array[i+1].rho + 1), x[2*i], x[2*i+1], x[2*j+1], d_i);
-// 		j = i + 1;
-// 		d_plus = weighted_diff(1, main_grid.array[i].rho, main_grid.array[i+1].rho, main_grid.array[i-1].rho, minmod(-main_grid.array[i-1].rho + 1, main_grid.array[i+1].rho + 1), x[2*i], x[2*i+1], x[2*j+1], d_i);
-// 
-// 		k = select_k(d_minus, d_zero, d_plus);
-// 		j = i + k;
-// 		if (k == -2) {
-// 			/* use limiter */
-// 			main_grid.interfaces[2*i].rho = tvd_limit_rec(main_grid.array[i].rho, minmod(-main_grid.array[i-1].rho + 1, main_grid.array[i+1].rho + 1), x[2*i], x[2*i+1], d_i);
-// 			main_grid.interfaces[2*i+1].rho = tvd_limit_rec(main_grid.array[i].rho, minmod(-main_grid.array[i-1].rho + 1, main_grid.array[i+1].rho + 1), x[2*(i+1)], x[i], d_i);
-// 		} else if (k == 2) {
+    // Density
+// 		if (reconstruct_density(i) < 0)
 // 			return -1;
-// 		} else {
-// 			/* Use quadratic */
-// 			main_grid.interfaces[2*i].rho = quad_polyonimals(main_grid.array[i].rho, main_grid.array[i+1].rho, main_grid.array[i-1].rho, x[2*i], x[2*j+1], d_i);
-// 			main_grid.interfaces[2*i+1].rho = quad_polyonimals(main_grid.array[i].rho, main_grid.array[i+1].rho, main_grid.array[i-1].rho, x[2*(i+1)], x[i], d_i);
-// 		}
-// 
-//     // Velocity (all of its components)
+
+    // Velocity (all of its components)
 //     for (int n = 0; n < n_comp; ++n){
-// 			j = i - 1;
-// 			d_minus = weighted_diff(1, main_grid.array[i].u[n], main_grid.array[i+1].u[n], main_grid.array[i-1].u[n], minmod(-main_grid.array[i-1].u[n] + 1, main_grid.array[i+1].u[n] + 1), x[2*i], x[2*i+1], x[2*j+1], d_i);
-// 			j = i;
-// 			d_zero = weighted_diff(0.7, main_grid.array[i].u[n], main_grid.array[i+1].u[n], main_grid.array[i-1].u[n], minmod(-main_grid.array[i-1].u[n] + 1, main_grid.array[i+1].u[n] + 1), x[2*i], x[2*i+1], x[2*j+1], d_i);
-// 			j = i + 1;
-// 			d_plus = weighted_diff(1, main_grid.array[i].u[n], main_grid.array[i+1].u[n], main_grid.array[i-1].u[n], minmod(-main_grid.array[i-1].u[n] + 1, main_grid.array[i+1].u[n] + 1), x[2*i], x[2*i+1], x[2*j+1], d_i);
-// 
-// 			k = select_k(d_minus, d_zero, d_plus);
-// 			j = i + k;
-// 			if (k == -2) {
-// 				/* use limiter */
-// 				main_grid.interfaces[2*i].u[n] = tvd_limit_rec(main_grid.array[i].u[n], minmod(-main_grid.array[i-1].u[n] + 1, main_grid.array[i+1].u[n] + 1), x[2*i], x[2*i+1], d_i);
-// 				main_grid.interfaces[2*i+1].u[n] = tvd_limit_rec(main_grid.array[i].u[n], minmod(-main_grid.array[i-1].u[n] + 1, main_grid.array[i+1].u[n] + 1), x[2*(i+1)], x[i], d_i);
-// 			} else if (k == 2) {
+// 			if (reconstruct_velocity(i, n) < 0)
 // 				return -1;
-// 			} else {
-// 				/* Use quadratic */
-// 				main_grid.interfaces[2*i].u[n] = quad_polyonimals(main_grid.array[i].u[n], main_grid.array[i+1].u[n], main_grid.array[i-1].u[n], x[2*i], x[2*j+1], d_i);
-// 				main_grid.interfaces[2*i+1].u[n] = quad_polyonimals(main_grid.array[i].u[n], main_grid.array[i+1].u[n], main_grid.array[i-1].u[n], x[2*(i+1)], x[i], d_i);
-// 			}
-// 
 //     }
 
-			/* TODO name this part of the code */
+			/* Build conservatives ? */
 			main_grid.intf_cons[2*i].build(main_grid.interfaces[2*i]);
 			main_grid.intf_cons[2*i+1].build(main_grid.interfaces[2*i+1]);
   }
