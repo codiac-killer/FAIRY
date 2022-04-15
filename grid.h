@@ -6,6 +6,20 @@
 #include "init_params.h"
 #include <functional>
 
+static const int        i_min = 1, i_max = 2;
+static const int        j_min = 1, j_max = 2;
+static const int        k_min = 1, k_max = 2;
+static const char*		space = "linear";
+static const char*    bound_11 = "outflow";
+static const char*    bound_12 = "outflow";
+
+double d_i = ((float)i_max - (float)i_min)/(float)idim ;//  dX of numerical grid
+
+double x[2*idim+1+4*dim_b];
+double z[0]; 
+double y[0];
+
+
 class primitive {
 public:
 // orizoume to u pinaka me ta primitves 
@@ -149,7 +163,7 @@ public:
 		i = ii;
 		j = jj;
 		k = kk;
-		array.resize(2*(i+(i>1)*2*dim_b)*(j+(j>1)*2*dim_b)*(k+(k>1)*2*dim_b)); //2 for each  i and each side of dim_b cell (basically 2*(i+boundary cells))
+		array.resize(2*(i+(i>1)*(2*dim_b+1))*(j+(j>1)*(2*dim_b+1))*(k+(k>1)*(2*dim_b+1)));  // 2 elements (center & left interface) for each cell plus one extra if for each non ekfulismeni dimension
 		//array.resize(i*i*j*k);
 		interfaces.resize(2*(i+(i>1)*2*dim_b)*j*k);
 		intf_cons.resize(2*(i+(i>1)*2*dim_b)*j*k);
@@ -171,11 +185,25 @@ public:
 			std::cout<<"\n";
 		}
 	}
+	void print_grid(){
+		for (int Di=0; Di<2*idim+1+4*dim_b; Di++){
+			printf("%d %f \n", Di, x[Di]);
+		}
+		printf("\n");
+	}
+
 	void print_interfaces(){
     printf("|");
 		for (int Di=0; Di<i+2*dim_b; Di++){
       	    printf("%f %f \n", interfaces[2*Di].p_th, interfaces[2*Di+1].p_th);
-			//printf("%f %f \n", intf_flx[2*Di].rhof_[1], intf_flx[2*Di+1].rhof_[1]);
+    }
+    printf("\n");
+	}
+
+	void test_interfaces(int error_margin){
+		int Di;
+		for (Di=0; Di<i+1; Di++){
+      	    printf("%f %f %f\n", interfaces[2*(Di+dim_b)-1].p_th, interfaces[2*(Di+dim_b)].p_th, x[2*(Di+dim_b)]);  // sin(2*M_PI*(x[2*Di+1+dim_b]-1)));
     }
     printf("\n");
 	}
